@@ -1,0 +1,16 @@
+{
+  "name": "zcode-locale-ru",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Russian localization pack for ZCode desktop app (community, unofficial)",
+  "scripts": {
+    "extract": "node scripts/extract.mjs",
+    "check": "node scripts/check.mjs",
+    "check:strict": "node scripts/check.mjs --strict",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@electron/asar": "^4.3.0"
+  }
+}
