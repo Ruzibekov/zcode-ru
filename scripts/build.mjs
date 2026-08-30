@@ -208,11 +208,34 @@ for (const f of readdirSync(hostDir).filter(f => f.endsWith('.js'))) {
   if (n) { writeFileSync(fp, h); log(`  ok [host:описания агентов] замен: ${n}`); }
 }
 
+// --- 6c. глобальный свип: Zod-схемы локалей и whitelist'ы дублируются в каждом слое бандла ---
+const changedSweep = [];
+(function walk(dir) {
+  for (const f of readdirSync(dir)) {
+    const fp = join(dir, f);
+    if (statSync(fp).isDirectory()) { walk(fp); continue; }
+    if (!/\.(js|cjs)$/.test(f)) continue;
+    let c = readFileSync(fp, 'utf8');
+    const b4 = c;
+    c = c.split('enum(["zh-CN","en-US"])').join('enum(["zh-CN","en-US","ru-RU"])');
+    c = c.split('enum(["system","zh-CN","en-US"])').join('enum(["system","zh-CN","en-US","ru-RU"])');
+    if (fp.includes('/assets/')) {
+      c = c.replace(/===`zh-CN`\|\|(\w+)===`en-US`/g,
+        (m, v) => `===\`zh-CN\`||${v}===\`en-US\`||${v}===\`ru-RU\``);
+      c = c.replace(/===`en-US`\|\|(\w+)===`zh-CN`/g,
+        (m, v) => `===\`en-US\`||${v}===\`zh-CN\`||${v}===\`ru-RU\``);
+    }
+    if (c !== b4) { writeFileSync(fp, c); changedSweep.push(fp); }
+  }
+})(join(BUILDTREE, 'out'));
+log(`  ok [zod-схемы+whitelist'ы локалей] файлов с заменами: ${changedSweep.length}`);
+changedSweep.forEach(f => log(`    - ${f.replace(BUILDTREE, '')}`));
+
 // --- 7. верификация парсинга ---
 log('\nверификация парсинга:');
-for (const f of [iP, sP]) {
+for (const f of [iP, sP, ...changedSweep]) {
   const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' });
-  log(`  ${r.status === 0 ? 'ok' : '!! FAIL'} ${f.split('/').pop()}`);
+  log(`  ${r.status === 0 ? 'ok' : '!! FAIL'} ${f.replace(BUILDTREE, '')}`);
   if (r.status !== 0) { fails.push('parse: ' + f); if (r.stderr) log(r.stderr.slice(0, 400)); }
 }
 

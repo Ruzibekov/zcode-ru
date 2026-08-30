@@ -7,7 +7,7 @@
 set -euo pipefail
 
 REPO="warment/zcode-ru"
-VERSION="v2.0.0"
+VERSION="v2.0.1"
 APP="/Applications/ZCode.app"
 PLIST="$APP/Contents/Info.plist"
 RES="$APP/Contents/Resources"

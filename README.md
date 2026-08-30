@@ -52,7 +52,7 @@ ZCode — Agentic Development Environment от Z.ai. Официально под
 ## Быстрый старт
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tools/install.sh)
 ```
 
 > **Важно:** закрой ZCode перед запуском — установщик не трогает запущенное приложение.
@@ -118,6 +118,8 @@ bash install.sh --restore
 
 Не переведено осознанно: диалоги main process (About, трей) и CLI — отдельные корпуса; `Agent`, `MCP`, `GLM` — технические термины по глоссарию.
 
+Не локализуется в принципе: **шаблоны автоматизаций** (Morning dev brief, Risk scan…) — их названия и описания приходят с сервера Z.ai как данные, мимо словаря интерфейса. Лечится только апстримом.
+
 ---
 
 ## Пересборка после обновления
@@ -170,7 +172,7 @@ bash tools/apply.sh   # проверь в ZCode
 Unofficial community pack adding a **native third locale (`ru-RU`)** to the ZCode desktop app (macOS, 3.10.1): **5,018 UI strings — 100% of the renderer corpus**, third entry in the language selector (System / English / Русский), English fallback for new upstream strings, translated built-in agent descriptions.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tools/install.sh)
 ```
 
 Restore: `bash install.sh --restore`. The installer backs up `app.asar`, patches it, re-signs the app ad-hoc and relaunches it. See [SAFETY.md](./SAFETY.md) for risks (signature, updates, TCC permissions). Not affiliated with Z.ai — see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).

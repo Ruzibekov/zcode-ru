@@ -52,7 +52,7 @@ ZCode 是 Z.ai 推出的 Agentic Development Environment。官方界面只提供
 ## 快速开始
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tools/install.sh)
 ```
 
 > **注意：** 安装前请完全退出 ZCode——安装脚本不会改动正在运行的应用。
@@ -118,6 +118,8 @@ bash install.sh --restore
 
 有意不翻译：main process 对话框（关于、托盘）与 CLI——属于独立语料；`Agent`、`MCP`、`GLM`——按术语表保留的英文技术术语。
 
+无法本地化：**自动化模板**（Morning dev brief、Risk scan 等）的名称和描述来自 Z.ai 服务器数据，不经过界面字典——只能等待上游支持。
+
 ---
 
 ## 更新后重新构建
@@ -168,7 +170,7 @@ bash tools/apply.sh   # 在 ZCode 中验证
 Unofficial community pack adding a **native third locale (`ru-RU`)** to the ZCode desktop app (macOS, 3.10.1): **5,018 UI strings — 100% of the renderer corpus**, third entry in the language selector (System / English / Русский), English fallback for new upstream strings.
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tools/install.sh)
 ```
 
 Restore: `bash install.sh --restore`. See [SAFETY.md](./SAFETY.md) for risks. Not affiliated with Z.ai — see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
