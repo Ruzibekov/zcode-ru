@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>为 ZCode 3.10.1 添加完整的俄语界面（ru-RU）</strong><br>
-  语言选择器中的第三个语言 — System / English / <strong>Русский</strong>。不影响中文。
+  语言选择器中的第三个语言 — System / English / <strong>Русский</strong>。
 </p>
 
 <p align="center">

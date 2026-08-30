@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Полноценный русский язык (ru-RU) для ZCode 3.10.1</strong><br>
-  Третий язык в селекторе — System / English / <strong>Русский</strong>. Китайский не затронут.
+  Третий язык в селекторе — System / English / <strong>Русский</strong>.
 </p>
 
 <p align="center">
