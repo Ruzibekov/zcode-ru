@@ -1,77 +1,183 @@
-# ZCode RU — русская локализация ZCode.app
+<p align="center">
+  <img src="https://zcode.z.ai/_next/image?url=%2Fimages%2Fhero-visual%2Fzcode-logo%402x.png&w=128&q=75" alt="ZCode" width="64">
+</p>
 
-**RU** | [EN](#english)
+<h1 align="center">ZCode Russian Localization</h1>
 
-Русская локализация (ru-RU) десктоп-приложения [ZCode](https://zcode.z.ai) от Z.ai.
-Полноценный третий язык интерфейса: System / English / **Русский** — 5 018 строк UI.
+<p align="center">
+  <strong>Полноценный русский язык (ru-RU) для ZCode 3.10.1</strong><br>
+  Третий язык в селекторе — System / English / <strong>Русский</strong>. Китайский не затронут.
+</p>
 
-> ⚠️ Неофициальный-community-проект. Модифицирует установленное приложение (см. [SAFETY.md](SAFETY.md)).
-> Привязан к версии ZCode **3.10.1** (build 6272).
+<p align="center">
+  <a href="https://github.com/warment/zcode-ru/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-7c3aed.svg" alt="MIT License">
+  </a>
+  <a href="https://zcode.z.ai">
+    <img src="https://img.shields.io/badge/ZCode-3.10.1-7c3aed.svg" alt="ZCode 3.10.1">
+  </a>
+  <a href="#translation">
+    <img src="https://img.shields.io/badge/Перевод-100%25-22c55e.svg" alt="100% translated">
+  </a>
+  <a href="https://github.com/warment/zcode-ru/releases">
+    <img src="https://img.shields.io/badge/release-v2.0.0-7c3aed.svg" alt="v2.0.0">
+  </a>
+</p>
 
-## Статус
+<p align="center">
+  Русский · <a href="#english">English</a> · <a href="./README_CN.md">中文</a>
+</p>
 
-| Компонент | Состояние |
-|---|---|
-| Рендерер (окна, чат, настройки) | 5 018 ключей — 100% корпуса |
-| Диалоги/трей main process | системные — английские (ru → en-US ветка) |
-| CLI (`zcode` в терминале) | не локализован |
-| Мелкие окна (мониторинг процессов, CUA-разрешения) | переведены |
+---
 
-## Установка (macOS, ZCode 3.10.1)
+## Обзор
+
+ZCode — Agentic Development Environment от Z.ai. Официально поддерживаются два языка интерфейса — китайский и английский; локали зашиты в JS-бандл, добавить новую через настройки невозможно.
+
+Этот пак решает проблему одной командой: добавляет в приложение **нативную третью локаль `ru-RU`** — без подмены китайского, с английским fallback для строк будущих версий.
+
+**Подход:**
+
+```
+  ZCode.app (до)                 ZCode.app (после)
+┌───────────────────┐        ┌───────────────────┐
+│  zh-CN  中文       │        │  zh-CN  中文       │
+│  en-US  English   │   →    │  en-US  English   │
+│                   │        │  ru-RU  Русский ← │
+└───────────────────┘        └───────────────────┘
+```
+
+---
+
+## Быстрый старт
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
 ```
 
-Скрипт: проверяет версию приложения → бэкапит → подменяет `app.asar` на русифицированный →
-переподписывает ad-hoc → перезапускает ZCode. Установка требует полного закрытия приложения
-и ~1 минуты. Откат — той же командой с `--restore` (см. ниже).
+> **Важно:** закрой ZCode перед запуском — установщик не трогает запущенное приложение.
 
-Ручной путь: скачать `app-ru.asar` из [Releases](https://github.com/warment/zcode-ru/releases) и заменить `app.asar` вручную (не забудьте про переподпись) — либо использовать `tools/apply.sh` из репозитория.
+Установщик выполняет пять шагов:
 
-> Версия для ZCode **3.0.1** (старый подход, словарь 3.5k) — тег `v1.0-zcode-3.0.1` и релиз v1.
+| Шаг | Действие |
+| --- | --- |
+| 1 | Проверяет версию ZCode (3.10.1) и наличие приложения |
+| 2 | Бэкапит `app.asar` → `~/.zcode-ru-backup/` |
+| 3 | Скачивает русифицированную сборку из Release и подменяет `app.asar` |
+| 4 | Переподписывает приложение (ad-hoc) |
+| 5 | Перезапускает ZCode; если не завелось — автоматически откатывает оригинал |
+
+После этого открой ZCode — в настройках **три языка**, включая **Русский**. При русской системной локали выбрано автоматически.
+
+Откат в любой момент:
+
+```bash
+bash install.sh --restore
+```
+
+---
 
 ## Как это работает
 
-Словари интерфейса ZCode зашиты в `app.asar` (IntlProvider-чанк, локали zh-CN/en-US).
-Пак добавляет третий словарь `ru-RU` (fallback на английский для новых строк апстрима),
-регистрирует локаль в whitelist'ах рендерера и main process, добавляет пункт «Русский»
-в селектор языка (Настройки → Язык) и учит системное определение локали (`ru*` → `ru-RU`).
+### Словарь ru-RU
 
-Изменяются 6 файлов внутри asar; проверка целостности Electron (fuse) в этом билде
-отключена, поэтому Info.plist не затрагивается; подпись после патча — ad-hoc.
+В `IntlProvider-*.js` находится реестр локалей — словари `zh-CN` и `en-US` (~5 000 ключей каждый). Пак добавляет третий словарь: **полная копия английского + русский оверлей**, поэтому непереведённые и новые строки апстрима показывают английский, а не «голые» ключи.
 
-## Обновления
+> Размер чанка: 654 KB → 1.1 MB. JS-парсер не ломается (проверяется при сборке).
 
-При обновлении ZCode патч слетает (asar заменяется установщиком). Порядок:
+### Патчи кода
 
-```bash
-node scripts/extract.mjs   # новый корпус из установленной версии
-node scripts/check.mjs --strict   # что изменилось
-node scripts/build.mjs     # пересборка
-bash tools/apply.sh        # установка (закрой ZCode — скрипт дождётся)
-```
+После словаря обновляются точки, где код проверяет допустимые локали:
 
-## Для разработчиков
+| Файл | Что изменяется |
+| --- | --- |
+| `IntlProvider-*.js` | Реестр словарей `g` — добавлен `ru-RU` (fallback через `Object.assign`) |
+| `IntlProvider-*.js` | Валидация локали, системное определение (`ru*` → `ru-RU`) |
+| `styles-*.js` | Селектор языка — третий пункт «Русский» (3 места) |
+| `process-monitor-*.js` | Русский подсловарь окна мониторинга процессов |
+| `cua-permission-panel-*.js` | Русский подсловарь панели разрешений Computer Use |
+| `chunk-*.js` (main) | Zod-валидация настроек — `ru-RU` в enum |
+| `index.js` (main) | `resolveSystemApplicationLocale` — системное определение |
+| `host/index.js` | Описания встроенных агентов и стилей вывода (5 строк) |
+
+**Итого:** 12 патчей в 6 файлах. Info.plist не затрагивается (fuse целостности asar в билде отключён).
+
+---
+
+## Translation
+
+<a name="translation"></a>
+
+| Метрика | Значение |
+| --- | --- |
+| Ключей в корпусе | 5 018 (82 namespace) |
+| Переведено | 5 018 из 5 018 **(100%)** |
+| Fallback | английский — для строк будущих версий |
+
+Переведено: чат, настройки, плагины, скиллы, MCP, субагенты, git, автоматизации, боты, usage, вики, диалоги подтверждений, мониторинг процессов.
+
+Не переведено осознанно: диалоги main process (About, трей) и CLI — отдельные корпуса; `Agent`, `MCP`, `GLM` — технические термины по глоссарию.
+
+---
+
+## Пересборка после обновления
+
+ZCode обновится — перевод слетит. Пересобери под новую версию:
 
 ```bash
 npm install
-npm run extract      # корпус en+zh из app.asar → upstream/corpus.json
-npm run check:strict # валидация словаря (полнота, плейсхолдеры, мусор)
-npm run build        # build/app-ru.asar
+node scripts/extract.mjs        # корпус en+zh из установленной версии
+node scripts/check.mjs --strict # что изменилось
+node scripts/build.mjs          # build/app-ru.asar
+bash tools/apply.sh             # установка (сам дождётся закрытия приложения)
 ```
 
-Словарь: `dict/ru/*.json` — плоские `{"ключ": "русский"}`, пачки по namespace'ам.
-Правила перевода и глоссарий: [docs/glossary.md](docs/glossary.md).
+---
+
+## Совместимость
+
+| Параметр | Значение |
+| --- | --- |
+| ZCode | 3.10.1 (build 6272) |
+| ОС | macOS (arm64) |
+| Electron | 41.x |
+| Зависимости | `@electron/asar` (локально, через npm) |
+
+---
+
+## Контрибьюшены
+
+PR приветствуются. Особенно:
+
+- Улучшения перевода (`dict/ru/*.json`)
+- Адаптация патч-точек под новые версии ZCode
+- Локализация main process и CLI
+
+```bash
+git clone https://github.com/warment/zcode-ru.git
+cd zcode-ru && npm install
+# отредактируй dict/ru/*.json
+node scripts/check.mjs --strict && node scripts/build.mjs
+bash tools/apply.sh   # проверь в ZCode
+```
+
+---
 
 ## English
 
-Unofficial Russian (ru-RU) localization pack for the ZCode desktop app by Z.ai.
-Adds a third UI language (System / English / Русский) by patching `app.asar`
-of the installed app. Targets ZCode 3.10.1 — see [SAFETY.md](SAFETY.md) before use.
-Build from source: `npm install && npm run build`, then `bash tools/apply.sh`
-(closes the app automatically). Restore: `bash tools/restore.sh`.
+<a name="english"></a>
 
-## Лицензия
+Unofficial community pack adding a **native third locale (`ru-RU`)** to the ZCode desktop app (macOS, 3.10.1): **5,018 UI strings — 100% of the renderer corpus**, third entry in the language selector (System / English / Русский), English fallback for new upstream strings, translated built-in agent descriptions.
 
-MIT — см. [LICENSE](LICENSE). Авторство ZCode — Z.ai: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.0/tools/install.sh)
+```
+
+Restore: `bash install.sh --restore`. The installer backs up `app.asar`, patches it, re-signs the app ad-hoc and relaunches it. See [SAFETY.md](./SAFETY.md) for risks (signature, updates, TCC permissions). Not affiliated with Z.ai — see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+
+---
+
+<p align="center">
+  <sub>Сделано для русскоязычного сообщества разработчиков</sub><br>
+  <sub>ZCode — <a href="https://zcode.z.ai">zcode.z.ai</a></sub>
+</p>
