@@ -5,7 +5,7 @@
 <h1 align="center">ZCode Russian Localization</h1>
 
 <p align="center">
-  <strong>Полноценный русский язык (ru-RU) для ZCode 3.10.1</strong><br>
+  <strong>Полноценный русский язык (ru-RU) для ZCode Desktop (macOS)</strong><br>
   Третий язык в селекторе — System / English / <strong>Русский</strong>.
 </p>
 
@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/license-MIT-7c3aed.svg" alt="MIT License">
   </a>
   <a href="https://zcode.z.ai">
-    <img src="https://img.shields.io/badge/ZCode-3.10.1-7c3aed.svg" alt="ZCode 3.10.1">
+    <img src="https://img.shields.io/badge/ZCode-любая_версия-7c3aed.svg" alt="ZCode any version">
   </a>
   <a href="#translation">
     <img src="https://img.shields.io/badge/Перевод-100%25-22c55e.svg" alt="100% translated">
@@ -61,7 +61,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tool
 
 | Шаг | Действие |
 | --- | --- |
-| 1 | Проверяет версию ZCode (3.10.1) и наличие приложения |
+| 1 | Находит приложение и показывает его версию (пак ставится на любую версию) |
 | 2 | Бэкапит `app.asar` → `~/.zcode-ru-backup/` |
 | 3 | Скачивает русифицированную сборку из Release и подменяет `app.asar` |
 | 4 | Переподписывает приложение (ad-hoc) |
@@ -146,7 +146,7 @@ bash tools/apply.sh             # установка (сам дождётся з
 
 | Параметр | Значение |
 | --- | --- |
-| ZCode | 3.10.1 (build 6272) |
+| ZCode | любая версия; проверено на 3.10.1 (6272) и 3.10.2 (6414). Патчи цепляются за структуру кода, не за версию: при изменении кода апстримом сборка падает с «якорь не найден», а не ломает приложение |
 | ОС | macOS (arm64) |
 | Electron | 41.x |
 | Зависимости | `@electron/asar` (локально, через npm) |
@@ -175,7 +175,7 @@ bash tools/apply.sh   # проверь в ZCode
 
 <a name="english"></a>
 
-Unofficial community pack adding a **native third locale (`ru-RU`)** to the ZCode desktop app (macOS, 3.10.1): **5,018 UI strings — 100% of the renderer corpus**, third entry in the language selector (System / English / Русский), English fallback for new upstream strings, translated built-in agent descriptions.
+Unofficial community pack adding a **native third locale (`ru-RU`)** to the ZCode desktop app (macOS): **5,018 UI strings — 100% of the renderer corpus**, third entry in the language selector (System / English / Русский), English fallback for new upstream strings, translated built-in agent descriptions.
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tools/install.sh)

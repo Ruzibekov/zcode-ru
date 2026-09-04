@@ -3,7 +3,8 @@
 # Использование:
 #   bash install.sh             # установить (скачает app-ru.asar из Release)
 #   bash install.sh --restore   # откатить к оригиналу из бэкапа
-# Целевая версия: ZCode 3.10.1 (macOS). См. SAFETY.md.
+# Ставится на любую версию ZCode (macOS). Проверку структуры кода делает
+# сам asar: непатчемые точки видны в логе install-скрипта. См. SAFETY.md.
 set -euo pipefail
 
 REPO="warment/zcode-ru"
@@ -13,7 +14,6 @@ PLIST="$APP/Contents/Info.plist"
 RES="$APP/Contents/Resources"
 ASAR="$RES/app.asar"
 BACKUP_DIR="$HOME/.zcode-ru-backup"
-EXPECTED_VER="3.10.1"
 
 log() { echo "==> $*"; }
 die() { echo "ОШИБКА: $*" >&2; exit 1; }
@@ -22,9 +22,7 @@ die() { echo "ОШИБКА: $*" >&2; exit 1; }
 [[ -d "$APP" ]] || die "ZCode.app не найден в /Applications"
 
 ACTUAL_VER=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST" 2>/dev/null || echo '?')
-if [[ "$ACTUAL_VER" != "$EXPECTED_VER" && "${1:-}" != "--force" ]]; then
-  die "версия ZCode $ACTUAL_VER, пак собран под $EXPECTED_VER. Обнови пак или запусти с --force на свой риск."
-fi
+log "версия ZCode: $ACTUAL_VER (пак ставится на любую версию; непатчемые точки будут видны в логе ниже)"
 
 if [[ "${1:-}" == "--restore" ]]; then
   [[ -f "$BACKUP_DIR/app.asar.stock" ]] || die "бэкап не найден: $BACKUP_DIR/app.asar.stock"
