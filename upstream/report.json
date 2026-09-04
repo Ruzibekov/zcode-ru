@@ -1,8 +1,8 @@
 {
   "app": "ZCode.app",
   "asar": "/Applications/ZCode.app/Contents/Resources/app.asar",
-  "chunk": "out/renderer/assets/IntlProvider-CyTmJHD8.js",
-  "extractedAt": "2026-08-30T04:09:48.027Z",
+  "chunk": "out/renderer/assets/IntlProvider-CHTZIW2N.js",
+  "extractedAt": "2026-09-04T07:04:10.026Z",
   "totalKeys": 5018,
   "namespaces": {
     "settings": 1691,

@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { extractFile } from '@electron/asar';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ASAR = process.argv.slice(2).find(a => !a.startsWith('--')) ?? '/Applications/ZCode.app/Contents/Resources/app.asar';
+const APP = '/Applications/ZCode.app';
+const ASAR = process.argv.slice(2).find(a => !a.startsWith('--')) ?? join(APP, 'Contents/Resources/app.asar');
 const SPIKE = process.argv.includes('--spike');
 const WORK = join(ROOT, 'work'), STOCK = join(WORK, 'stock'), BUILDTREE = join(WORK, 'build-tree');
 const OUT = join(ROOT, 'build/app-ru.asar');
@@ -206,6 +207,39 @@ for (const f of readdirSync(mainDir).filter(f => f.endsWith('.js'))) {
     m = readFileSync(fp, 'utf8');
   } else if (m.includes('"titleBar.menu.file"')) {
     fails.push(`меню-словарь sp: якорь не найден в ${f}`);
+  }
+  // 6b. словарь About-диалога AK (index.js): {"zh-CN":{aboutTitle:...},"en-US":{...}},
+  // wO(locale)=AK[locale]??AK[wn='zh-CN'] — без ru-RU About китайский. Вставляем ru-RU.
+  const akAnchor = m.match(/=\{"zh-CN":\{aboutTitle:/);
+  if (akAnchor) {
+    const objStart = m.indexOf('{"zh-CN":{', akAnchor.index);
+    const akClose = closeBrace(m, objStart);
+    // en-US-подобъект AK: внутри есть функции (s(e=>`...`)), для SPIKE просто копируем en-US целиком
+    const enKey = m.indexOf('"en-US":{', objStart);
+    const enBrace = m.indexOf('{', enKey);
+    const enClose = closeBrace(m, enBrace);
+    const enInner = m.slice(enBrace + 1, enClose);
+    const ruAbout = SPIKE
+      ? enInner
+      : 'aboutTitle:`О программе ZCode`,versionLabel:`Версия`,okButtonLabel:`ОК`,optimizedForAppleSilicon:`Оптимизировано для Apple Silicon.`,copyright:s(e=>`Все права защищены © ${e} ZCode.`,"copyright")';
+    // copyright в AK — вызов s(...), он уже в scope (s определён в модуле). Вставляем ,"ru-RU":{...}
+    const insert = `,"ru-RU":{${ruAbout}}`;
+    m = m.slice(0, akClose) + insert + m.slice(akClose);
+    writeFileSync(fp, m);
+    log(`  ok [main:About-словарь AK] ru-RU добавлен (+${insert.length} байт)`);
+    touched = true;
+    m = readFileSync(fp, 'utf8');
+  }
+  // 6c. константа версии в main/host чанках: апстрим забывает бампать Yu="3.10.1" между релизами
+  // (баг 3.10.2: About показывает старую версию). Ставим версию из Info.plist установленного приложения.
+  const appVersion = (() => {
+    try { return spawnSync('/usr/libexec/PlistBuddy', ['-c', 'Print :CFBundleShortVersionString', join(APP, 'Contents/Info.plist')], { encoding: 'utf8' }).stdout.trim(); }
+    catch { return null; }
+  })();
+  if (appVersion && !SPIKE) {
+    const before = m;
+    m = m.replace(/var\s+(\w+)="3\.10\.\d+"/g, `var $1="${appVersion}"`);
+    if (m !== before) log(`  ok [main:константа версии] -> ${appVersion}`);
   }
   if (!m.includes('"zh-CN"')) continue;
   log('main:', f);

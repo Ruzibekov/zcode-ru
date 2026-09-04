@@ -1,6 +1,7 @@
 #!/bin/bash
-# Установка спайк/прод-сборки: ждёт закрытия ZCode -> подменяет app.asar ->
-# переподписывает ad-hoc -> перезапускает. Не завелось — авто-откат asar.
+# Полностью автоматическая установка: вежливо просит ZCode закрыться -> ждёт ->
+# подменяет app.asar -> переподписывает ad-hoc -> перезапускает.
+# Не завелось — авто-откат asar. Ручных действий не требуется.
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="/Applications/ZCode.app"
@@ -14,7 +15,23 @@ echo "=== apply start $(date) ==="
 [ -f "$RU" ]    || { echo "FAIL: нет $RU"; exit 1; }
 [ -f "$STOCK" ] || { echo "FAIL: нет бэкапа $STOCK"; exit 1; }
 
-while pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; do sleep 2; done
+# 1. вежливая остановка: AppleEvent quit (сохраняет состояние), затем мягкое ожидание
+osascript -e 'tell application "ZCode" to quit' 2>/dev/null \
+  && echo "отправлен quit $(date)" || echo "quit не принят (не запущено?)"
+
+# 2. ждём закрытия до 30 сек; при зависании — SIGTERM процессам приложения
+for i in $(seq 1 15); do
+  pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1 || break
+  sleep 2
+done
+if pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; then
+  echo "не закрылось за 30с — SIGTERM"
+  pkill -TERM -f "/Applications/ZCode\.app/Contents" 2>/dev/null
+  sleep 3
+fi
+if pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; then
+  echo "FAIL: не удалось закрыть ZCode — установка отменена"; exit 1
+fi
 sleep 2
 echo "приложение закрыто $(date)"
 
