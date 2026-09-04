@@ -129,10 +129,13 @@ ZCode обновится — перевод слетит. Пересобери �
 ```bash
 npm install
 node scripts/extract.mjs        # корпус en+zh из установленной версии
-node scripts/check.mjs --strict # что изменилось
-node scripts/build.mjs          # build/app-ru.asar
+node scripts/check.mjs          # что изменилось (детали: --strict, --plurals-report)
+node scripts/build.mjs          # build/app-ru.asar — сам прогоняет strict-валидацию словаря
 bash tools/apply.sh             # установка (сам дождётся закрытия приложения)
 ```
+
+Сборка не начнётся (exit 1 до распаковки asar), если словарь не покрыл корпус на 100%,
+плейсхолдеры разошлись или плюральные формы неполны.
 
 ---
 

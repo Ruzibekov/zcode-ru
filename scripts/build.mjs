@@ -60,6 +60,25 @@ function readHeader(archive) {
   return JSON.parse(jb.toString('utf8'));
 }
 
+// --- 0. gate: словарь должен пройти строгую валидацию до распаковки asar ---
+if (!SPIKE) {
+  const corpusPath = join(ROOT, 'upstream/corpus.json');
+  if (!existsSync(corpusPath)) {
+    console.error('  !! FAIL gate: нет upstream/corpus.json — запусти `npm run extract`');
+    process.exit(1);
+  }
+  const corpusMtime = statSync(corpusPath).mtimeMs;
+  const asarMtime = statSync(ASAR).mtimeMs;
+  if (asarMtime > corpusMtime)
+    log('  ~ warn корпус старше app.asar — возможен дрифт апстрима, запусти `npm run extract`');
+  log('gate: check.mjs --strict ...');
+  const r = spawnSync(process.execPath, [join(ROOT, 'scripts/check.mjs'), '--strict'], { stdio: 'inherit' });
+  if (r.status !== 0) {
+    console.error('  !! FAIL gate: словарь не прошёл строгую валидацию — сборка отменена');
+    process.exit(1);
+  }
+}
+
 // --- 1. свежее дерево из stock ---
 if (!existsSync(join(STOCK, 'out'))) {
   log('извлекаю app.asar -> work/stock ...');
