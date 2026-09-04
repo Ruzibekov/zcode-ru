@@ -178,10 +178,35 @@ for (const [prefix, ruObj] of Object.entries(RU_SMALL)) {
 }
 
 // --- 6. main process: Zod-схема, системное определение, списки локалей ---
+// Словарь меню-бара/tray/dock (chunk-47DZU7O5.js, var sp): у апстрима только zh-CN/en-US,
+// fallback sp[Kr] = zh-CN — без ru-RU меню остаётся китайским. Добавляем третий словарь.
+const MENU_RU = '"desktopMenu.help.checkingForUpdates":"Проверка обновлений…","desktopMenu.help.downloadingUpdateProgress":"Скачивание обновления… {progress}","desktopMenu.help.downloadingUpdateVersion":"Скачивание обновления {version}…","desktopMenu.help.restartToUpdate":"Перезапустить для обновления ({version})","desktopMenu.help.updateAvailableVersion":"Доступна новая версия {version}","dock.menu.showCurrentWindow":"Показать текущее окно","titleBar.menu.app.hide":"Скрыть {appName}","titleBar.menu.app.hideOthers":"Скрыть остальные","titleBar.menu.app.quit":"Завершить {appName}","titleBar.menu.app.services":"Службы","titleBar.menu.app.showAll":"Показать все","titleBar.menu.edit":"Правка","titleBar.menu.edit.copy":"Копировать","titleBar.menu.edit.cut":"Вырезать","titleBar.menu.edit.delete":"Удалить","titleBar.menu.edit.paste":"Вставить","titleBar.menu.edit.redo":"Повторить","titleBar.menu.edit.selectAll":"Выбрать все","titleBar.menu.edit.undo":"Отменить","titleBar.menu.file":"Файл","titleBar.menu.file.closeWindow":"Закрыть окно","titleBar.menu.file.newTask":"Новая задача","titleBar.menu.file.openWorkspace":"Открыть рабочую папку","titleBar.menu.help":"Справка","titleBar.menu.help.about":"О программе ZCode","titleBar.menu.help.checkForUpdates":"Проверить обновления","titleBar.menu.help.clearAllData":"Очистить все данные","titleBar.menu.help.exportLogs":"Экспортировать логи","titleBar.menu.help.feedback":"Обратная связь","titleBar.menu.help.processMonitor":"Мониторинг процессов","titleBar.menu.help.startPerformanceRecording":"Начать запись производительности","titleBar.menu.help.stopPerformanceRecording":"Остановить запись производительности","titleBar.menu.help.toggleDevTools":"Инструменты разработчика","titleBar.menu.help.toggleZCodeStdioTap":"Перехват stdio-трафика агента","titleBar.menu.help.whatsNew":"Что нового","titleBar.menu.help.zcodeEndpoint":"ZCode Endpoint","titleBar.menu.help.zcodeEndpoint.custom":"Свой…","titleBar.menu.help.zcodeEndpoint.production":"Production (по умолчанию)","titleBar.menu.help.zcodeEndpoint.reset":"Сбросить","titleBar.menu.help.zcodeEndpoint.test":"Test","titleBar.menu.view":"Вид","titleBar.menu.view.actualSize":"Фактический размер","titleBar.menu.view.toggleFullScreen":"Переключить полный экран","titleBar.menu.view.zoomIn":"Увеличить","titleBar.menu.view.zoomOut":"Уменьшить","titleBar.menu.window":"Окно","titleBar.menu.window.bringAllToFront":"Все окна вперёд","titleBar.menu.window.minimize":"Свернуть","titleBar.menu.window.zoom":"Масштаб","tray.menu.openZCode":"Открыть ZCode","tray.menu.quit":"Завершить","tray.tooltip":"ZCode"';
 const mainDir = join(BUILDTREE, 'out/main');
 for (const f of readdirSync(mainDir).filter(f => f.endsWith('.js'))) {
   const fp = join(mainDir, f);
   let m = readFileSync(fp, 'utf8');
+  let touched = false;
+  // 6a. меню-словарь sp: вставляем "ru-RU":{...} рядом с "en-US":{...}
+  const spAnchor = m.match(/\w+=\{"zh-CN":\{"titleBar\.menu\.file"/);
+  if (spAnchor) {
+    const objStart = m.indexOf('{"zh-CN":{', spAnchor.index);
+    const spClose = closeBrace(m, objStart);
+    // найти внутри sp открывающую скобку en-US-подобъекта
+    const enKey = m.indexOf('"en-US":{', objStart);
+    const enBrace = m.indexOf('{', enKey);
+    const enClose = closeBrace(m, enBrace);
+    const enInner = m.slice(enBrace + 1, enClose); // содержимое en-US без скобок
+    const ruDict = SPIKE ? enInner : MENU_RU;
+    // вставка ПЕРЕД закрывающей скобкой sp: ,"ru-RU":{...}
+    const insert = `,"ru-RU":{${ruDict}}`;
+    m = m.slice(0, spClose) + insert + m.slice(spClose);
+    writeFileSync(fp, m);
+    log(`  ok [main:меню-словарь sp] ru-RU добавлен (+${insert.length} байт)`);
+    touched = true;
+    m = readFileSync(fp, 'utf8');
+  } else if (m.includes('"titleBar.menu.file"')) {
+    fails.push(`меню-словарь sp: якорь не найден в ${f}`);
+  }
   if (!m.includes('"zh-CN"')) continue;
   log('main:', f);
   m = patch('main:Zod-enum', m,
