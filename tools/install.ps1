@@ -28,12 +28,12 @@ if ($Restore) {
   exit 0
 }
 
-# download app-ru.asar from release
+# download app-ru-win.asar from release
 $tmp = Join-Path $env:TEMP "zcode-ru-asar"
 New-Item -ItemType Directory -Force -Path $tmp, $Backup | Out-Null
-$Url = "https://github.com/$Repo/releases/download/$Version/app-ru.asar"
+$Url = "https://github.com/$Repo/releases/download/$Version/app-ru-win.asar"
 Write-Host "==> Downloading $Url ..."
-$Dest = Join-Path $tmp "app-ru.asar"
+$Dest = Join-Path $tmp "app-ru-win.asar"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Invoke-WebRequest -Uri $Url -OutFile $Dest -UseBasicParsing
 if ((Get-Item $Dest).Length -lt 100MB) { Write-Host "ERROR: download looks wrong ($((Get-Item $Dest).Length) bytes)" -ForegroundColor Red; exit 1 }
