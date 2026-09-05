@@ -61,22 +61,21 @@ function readHeader(archive) {
   return JSON.parse(jb.toString('utf8'));
 }
 
-// --- 0. gate: словарь должен пройти строгую валидацию до распаковки asar ---
+// --- 0. отчёт словаря (НЕ блокирует): непереведённое останется английским ---
+// Философия: русский ставится на любую версию приложения. Что распозналось — на русском,
+// что нет — английское слово. Полный отчёт: node scripts/check.mjs --strict
 if (!SPIKE) {
   const corpusPath = join(ROOT, 'upstream/corpus.json');
   if (!existsSync(corpusPath)) {
-    console.error('  !! FAIL gate: нет upstream/corpus.json — запусти `npm run extract`');
-    process.exit(1);
-  }
-  const corpusMtime = statSync(corpusPath).mtimeMs;
-  const asarMtime = statSync(ASAR).mtimeMs;
-  if (asarMtime > corpusMtime)
-    log('  ~ warn корпус старше app.asar — возможен дрифт апстрима, запусти `npm run extract`');
-  log('gate: check.mjs --strict ...');
-  const r = spawnSync(process.execPath, [join(ROOT, 'scripts/check.mjs'), '--strict'], { stdio: 'inherit' });
-  if (r.status !== 0) {
-    console.error('  !! FAIL gate: словарь не прошёл строгую валидацию — сборка отменена');
-    process.exit(1);
+    log('  ~ warn нет upstream/corpus.json — сверка с корпусом пропущена (запусти `npm run extract`)');
+  } else {
+    const corpusMtime = statSync(corpusPath).mtimeMs;
+    const asarMtime = statSync(ASAR).mtimeMs;
+    if (asarMtime > corpusMtime)
+      log('  ~ warn корпус старше app.asar — возможен дрифт апстрима, запусти `npm run extract`');
+    log('отчёт словаря (не блокирует сборку):');
+    spawnSync(process.execPath, [join(ROOT, 'scripts/check.mjs')], { stdio: 'inherit' });
+    log('непереведённые ключи останутся английскими — это штатное поведение');
   }
 }
 
