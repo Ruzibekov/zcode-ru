@@ -15,9 +15,11 @@ echo "=== apply start $(date) ==="
 [ -f "$RU" ]    || { echo "FAIL: нет $RU"; exit 1; }
 [ -f "$STOCK" ] || { echo "FAIL: нет бэкапа $STOCK"; exit 1; }
 
-# 1. вежливая остановка: AppleEvent quit (сохраняет состояние), затем мягкое ожидание
-osascript -e 'tell application "ZCode" to quit' 2>/dev/null \
-  && echo "отправлен quit $(date)" || echo "quit не принят (не запущено?)"
+# 1. вежливая остановка: AppleEvent quit в фоне (если приложение покажет диалог
+# подтверждения, osascript зависнет синхронно — поэтому & и таймаут не нужны:
+# дальше по циклу SIGTERM/SIGKILL закроют и диалог)
+osascript -e 'tell application "ZCode" to quit' >/dev/null 2>&1 &
+echo "отправлен quit $(date)"
 
 # 2. ждём закрытия до 30 сек; при зависании — SIGTERM, затем SIGKILL
 for i in $(seq 1 15); do
