@@ -75,6 +75,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/warment/zcode-ru/v2.0.1/tool
 bash install.sh --restore
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1          # установка
+powershell -ExecutionPolicy Bypass -File install.ps1 -Restore # откат
+```
+
 ---
 
 ## Как это работает
