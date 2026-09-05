@@ -19,7 +19,7 @@ echo "=== apply start $(date) ==="
 osascript -e 'tell application "ZCode" to quit' 2>/dev/null \
   && echo "отправлен quit $(date)" || echo "quit не принят (не запущено?)"
 
-# 2. ждём закрытия до 30 сек; при зависании — SIGTERM процессам приложения
+# 2. ждём закрытия до 30 сек; при зависании — SIGTERM, затем SIGKILL
 for i in $(seq 1 15); do
   pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1 || break
   sleep 2
@@ -27,7 +27,12 @@ done
 if pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; then
   echo "не закрылось за 30с — SIGTERM"
   pkill -TERM -f "/Applications/ZCode\.app/Contents" 2>/dev/null
-  sleep 3
+  sleep 4
+fi
+if pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; then
+  echo "SIGTERM не помог — SIGKILL (принудительное завершение)"
+  pkill -KILL -f "/Applications/ZCode\.app/Contents" 2>/dev/null
+  sleep 2
 fi
 if pgrep -f "/Applications/ZCode\.app/Contents" >/dev/null 2>&1; then
   echo "FAIL: не удалось закрыть ZCode — установка отменена"; exit 1
